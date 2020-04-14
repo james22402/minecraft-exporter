@@ -11,10 +11,10 @@ from os.path import isfile, join
 
 class MinecraftCollector(object):
     def __init__(self):
-        self.statsdirectory = "/world/stats"
-        self.playerdirectory = "/world/playerdata"
-        self.advancementsdirectory = "/world/advancements"
-        self.betterquesting = "/world/betterquesting"
+        self.statsdirectory = "/data/world/stats"
+        self.playerdirectory = "/data/world/playerdata"
+        self.advancementsdirectory = "/data/world/advancements"
+        self.betterquesting = "/data/world/betterquesting"
         self.map = dict()
         self.questsEnabled = False
         if os.path.isdir(self.betterquesting):
@@ -29,8 +29,8 @@ class MinecraftCollector(object):
             return self.map[uuid]
         else:
             result = requests.get('https://api.mojang.com/user/profiles/'+uuid+'/names')
-            self.map[uuid] = result.json()[0]['name']
-            return(result.json()[0]['name'])
+            self.map[uuid] = result.json()[-1]['name']
+            return(result.json()[-1]['name'])
 
     def get_server_stats(self):
         if not all(x in os.environ for x in ['RCON_HOST','RCON_PASSWORD']):
@@ -44,9 +44,12 @@ class MinecraftCollector(object):
         mcr = MCRcon(os.environ['RCON_HOST'],os.environ['RCON_PASSWORD'],port=int(os.environ['RCON_PORT']))
         mcr.connect()
 
+
+        #Dim -1 (minecraft:the_nether): Mean tick time: 0.093 ms. Mean TPS: 20.000Dim 0 (minecraft:overworld): Mean tick time: 15.325 ms. Mean TPS: 20.000Dim 1 (minecraft:the_end): Mean tick time: 0.002 ms. Mean TPS: 20.000Overall: Mean tick time: 15.444 ms. Mean TPS: 20.000
+
         # dimensions
         resp = mcr.command("forge tps")
-        dimtpsregex = re.compile("Dim\s*(-*\d*)\s\((.*?)\)\s:\sMean tick time:\s(.*?) ms\. Mean TPS: (\d*\.\d*)")
+        dimtpsregex = re.compile("Dim\s*(-*\d*)\s\((.*?)\):\sMean tick time:\s(.*?) ms\. Mean TPS: (\d*\.\d*)")
         for dimid, dimname, meanticktime, meantps in dimtpsregex.findall(resp):
             dim_tps.add_sample('dim_tps',value=meantps,labels={'dimension_id':dimid,'dimension_name':dimname})
             dim_ticktime.add_sample('dim_ticktime',value=meanticktime,labels={'dimension_id':dimid,'dimension_name':dimname})
@@ -83,7 +86,7 @@ class MinecraftCollector(object):
 
         # player
         resp = mcr.command("list")
-        playerregex = re.compile("There are \d*\/20 players online:(.*)")
+        playerregex = re.compile("There are \d*.*20 players online: (.*)")
         if playerregex.findall(resp):
             for player in playerregex.findall(resp)[0].split(","):
                 if player:
