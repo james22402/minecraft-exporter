@@ -44,9 +44,6 @@ class MinecraftCollector(object):
         mcr = MCRcon(os.environ['RCON_HOST'],os.environ['RCON_PASSWORD'],port=int(os.environ['RCON_PORT']))
         mcr.connect()
 
-
-        #Dim -1 (minecraft:the_nether): Mean tick time: 0.093 ms. Mean TPS: 20.000Dim 0 (minecraft:overworld): Mean tick time: 15.325 ms. Mean TPS: 20.000Dim 1 (minecraft:the_end): Mean tick time: 0.002 ms. Mean TPS: 20.000Overall: Mean tick time: 15.444 ms. Mean TPS: 20.000
-
         # dimensions
         resp = mcr.command("forge tps")
         dimtpsregex = re.compile("Dim\s*(-*\d*)\s\((.*?)\):\sMean tick time:\s(.*?) ms\. Mean TPS: (\d*\.\d*)")
@@ -110,11 +107,11 @@ class MinecraftCollector(object):
             data = json.load(json_file)
             json_file.close()
         nbtfile = nbt.nbt.NBTFile(self.playerdirectory+"/"+uuid+".dat",'rb')
-        data["stat.XpTotal"]  = nbtfile.get("XpTotal").value
-        data["stat.XpLevel"]  = nbtfile.get("XpLevel").value
-        data["stat.Score"]    = nbtfile.get("Score").value
-        data["stat.Health"]   = nbtfile.get("Health").value
-        data["stat.foodLevel"]= nbtfile.get("foodLevel").value
+        data["stat:XpTotal"]  = nbtfile.get("XpTotal").value
+        data["stat:XpLevel"]  = nbtfile.get("XpLevel").value
+        data["stat:Score"]    = nbtfile.get("Score").value
+        data["stat:Health"]   = nbtfile.get("Health").value
+        data["stat:foodLevel"]= nbtfile.get("foodLevel").value
         with open(self.advancementsdirectory+"/"+uuid+".json") as json_file:
             count = 0
             advancements = json.load(json_file)
@@ -123,9 +120,9 @@ class MinecraftCollector(object):
                   continue
                 if value["done"] == True:
                     count += 1
-        data["stat.advancements"] = count
+        data["stat:advancements"] = count
         if self.questsEnabled:
-            data["stat.questsFinished"] = self.get_player_quests_finished(uuid)
+            data["stat:questsFinished"] = self.get_player_quests_finished(uuid)
         return data
 
     def update_metrics_for_player(self,uuid):
@@ -150,67 +147,53 @@ class MinecraftCollector(object):
         player_slept        = Metric('player_slept',"Times a Player slept in a bed","counter")
         player_quests_finished = Metric('player_quests_finished', 'Number of quests a Player has finished', 'counter')
         player_used_crafting_table = Metric('player_used_crafting_table',"Times a Player used a Crafting Table","counter")
-        for key, value in data.items():
-            if key in ("stats", "DataVersion"):
-                continue
-            stat = key.split(".")[1] # entityKilledBy
-            if stat == "mineBlock":
-                blocks_mined.add_sample("blocks_mined",value=value,labels={'player':name,'block':'.'.join((key.split(".")[2],key.split(".")[3]))})
-            elif stat == "pickup":
-                blocks_picked_up.add_sample("blocks_picked_up",value=value,labels={'player':name,'block':'.'.join((key.split(".")[2],key.split(".")[3]))})
-            elif stat == "entityKilledBy":
-                if len(key.split(".")) == 4:
-                    player_deaths.add_sample('player_deaths',value=value,labels={'player':name,'cause':'.'.join((key.split(".")[2],key.split(".")[3]))})
-                else:
-                    player_deaths.add_sample('player_deaths',value=value,labels={'player':name,'cause':key.split(".")[2]})
-            elif stat == "jump":
-                player_jumps.add_sample("player_jumps",value=value,labels={'player':name})
-            elif stat == "walkOneCm":
-                cm_traveled.add_sample("cm_traveled",value=value,labels={'player':name,'method':"walking"})
-            elif stat == "swimOneCm":
-                cm_traveled.add_sample("cm_traveled",value=value,labels={'player':name,'method':"swimming"})
-            elif stat == "sprintOneCm":
-                cm_traveled.add_sample("cm_traveled",value=value,labels={'player':name,'method':"sprinting"})
-            elif stat == "diveOneCm":
-                cm_traveled.add_sample("cm_traveled",value=value,labels={'player':name,'method':"diving"})
-            elif stat == "fallOneCm":
-                cm_traveled.add_sample("cm_traveled",value=value,labels={'player':name,'method':"falling"})
-            elif stat == "flyOneCm":
-                cm_traveled.add_sample("cm_traveled",value=value,labels={'player':name,'method':"flying"})
-            elif stat == "boatOneCm":
-                cm_traveled.add_sample("cm_traveled",value=value,labels={'player':name,'method':"boat"})
-            elif stat == "horseOneCm":
-                cm_traveled.add_sample("cm_traveled",value=value,labels={'player':name,'method':"horse"})
-            elif stat == "climbOneCm":
-                cm_traveled.add_sample("cm_traveled",value=value,labels={'player':name,'method':"climbing"})
-            elif stat == "XpTotal":
-                player_xp_total.add_sample('player_xp_total',value=value,labels={'player':name})
-            elif stat == "XpLevel":
-                player_current_level.add_sample('player_current_level',value=value,labels={'player':name})
-            elif stat == "foodLevel":
-                player_food_level.add_sample('player_food_level',value=value,labels={'player':name})
-            elif stat == "Health":
-                player_health.add_sample('player_health',value=value,labels={'player':name})
-            elif stat == "Score":
-                player_score.add_sample('player_score',value=value,labels={'player':name})
-            elif stat == "killEntity":
-                entities_killed.add_sample('entities_killed',value=value,labels={'player':name,"entity":key.split(".")[2]})
-            elif stat == "damageDealt":
-                damage_dealt.add_sample('damage_dealt',value=value,labels={'player':name})
-            elif stat == "damageTaken":
-                damage_dealt.add_sample('damage_taken',value=value,labels={'player':name})
-            elif stat == "craftItem":
-                blocks_crafted.add_sample('blocks_crafted',value=value,labels={'player':name,'block':'.'.join((key.split(".")[2],key.split(".")[3]))})
-            elif stat == "playOneMinute":
-                player_playtime.add_sample('player_playtime',value=value,labels={'player':name})
-            elif stat == "advancements":
-                player_advancements.add_sample('player_advancements',value=value,labels={'player':name})
-            elif stat == "sleepInBed":
-                player_slept.add_sample('player_slept',value=value,labels={'player':name})
-            elif stat == "craftingTableInteraction":
-                player_used_crafting_table.add_sample('player_used_crafting_table',value=value,labels={'player':name})
-            elif stat == "questsFinished":
-                player_quests_finished.add_sample('player_quests_finished',value=value,labels={'player':name})
+        categories = ["minecraft:killed_by", "minecraft:custom", "minecraft:mined", "minecraft:killed", "minecraft:picked_up", "minecraft:crafted"]
+        for category in categories:
+            for element in data.get("stats").get(category):
+                if category == "minecraft:killed_by":
+                    player_deaths.add_sample('player_deaths',value=data.get("stats").get(category).get(element),labels={'player':name,'cause':element})
+                elif category == "minecraft:custom":
+                    if element == "minecraft:damage_taken":
+                        damage_taken.add_sample('damage_taken',value=data.get("stats").get(category).get(element),labels={'player':name})
+                    elif element == "minecraft:damage_dealt":
+                        damage_dealt.add_sample('damage_dealt',value=data.get("stats").get(category).get(element),labels={'player':name})
+                    elif element == "minecraft:play_one_minute":
+                        player_playtime.add_sample('player_playtime',value=data.get("stats").get(category).get(element),labels={'player':name})
+                    elif element == "minecraft:jump":
+                        player_jumps.add_sample("player_jumps",value=data.get("stats").get(category).get(element),labels={'player':name})
+                    elif element == "minecraft:sleep_in_bed":
+                        player_slept.add_sample('player_slept',value=data.get("stats").get(category).get(element),labels={'player':name})
+                    elif element == "minecraft:interact_with_crafting_table":
+                        player_used_crafting_table.add_sample('player_used_crafting_table',value=data.get("stats").get(category).get(element),labels={'player':name})
+                    elif element == "minecraft:crouch_one_cm":
+                        cm_traveled.add_sample("cm_traveled",value=data.get("stats").get(category).get(element),labels={'player':name,'method':"crouching"})
+                    elif element == "minecraft:walk_one_cm":
+                        cm_traveled.add_sample("cm_traveled",value=data.get("stats").get(category).get(element),labels={'player':name,'method':"walking"})
+                    elif element == "minecraft:sprint_one_cm":
+                        cm_traveled.add_sample("cm_traveled",value=data.get("stats").get(category).get(element),labels={'player':name,'method':"sprinting"})
+                    elif element == "minecraft:walk_on_water_one_cm":
+                        cm_traveled.add_sample("cm_traveled",value=data.get("stats").get(category).get(element),labels={'player':name,'method':"frost_walker"})
+                    elif element == "minecraft:fall_one_cm":
+                        cm_traveled.add_sample("cm_traveled",value=data.get("stats").get(category).get(element),labels={'player':name,'method':"falling"})
+                    elif element == "minecraft:fly_one_cm":
+                        cm_traveled.add_sample("cm_traveled",value=data.get("stats").get(category).get(element),labels={'player':name,'method':"flying"})
+                elif category == "minecraft:mined":
+                    blocks_mined.add_sample("blocks_mined",value=data.get("stats").get(category).get(element),labels={'player':name,'block':element})
+                elif category == "minecraft:killed":
+                    entities_killed.add_sample('entities_killed',value=data.get("stats").get(category).get(element),labels={'player':name,"entity":element})
+                elif category == "minecraft:picked_up":
+                    blocks_picked_up.add_sample("blocks_picked_up",value=data.get("stats").get(category).get(element),labels={'player':name,'block':element})
+                elif category == "minecraft:crafted":
+                    blocks_crafted.add_sample("blocks_crafted",value=data.get("stats").get(category).get(element),labels={'player':name,'block':element})
+        player_xp_total.add_sample('player_xp_total',value=data.get("stat:XpTotal"),labels={'player':name})
+        player_current_level.add_sample('player_current_level',value=data.get("stat:XpLevel"),labels={'player':name})
+        player_score.add_sample('player_score',value=data.get("stat:Score"),labels={'player':name})
+        player_health.add_sample('player_health',value=data.get("stat:Health"),labels={'player':name})
+        player_food_level.add_sample('player_food_level',value=data.get("stat:foodLevel"),labels={'player':name})
+        player_advancements.add_sample('player_advancements',value=data.get("stat:advancements"),labels={'player':name})
+        if self.questsEnabled:
+            player_quests_finished.add_sample('player_quests_finished',value=data.get("stat:questsFinished"),labels={'player':name})
+
         return [blocks_mined,blocks_picked_up,player_deaths,player_jumps,cm_traveled,player_xp_total,player_current_level,player_food_level,player_health,player_score,entities_killed,damage_taken,damage_dealt,blocks_crafted,player_playtime,player_advancements,player_slept,player_used_crafting_table,player_quests_finished]
 
     def collect(self):
