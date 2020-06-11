@@ -175,6 +175,7 @@ class MinecraftCollector(object):
         for category in categories:
             print(category)
             print(categories)
+            print(data.get("stats").get(category))
             for element in data.get("stats").get(category):
                 print("Element: " + element)
                 if category == "minecraft:killed_by":
