@@ -92,7 +92,7 @@ class MinecraftCollector(object):
             metrics.extend([dynmap_tile_render_statistics,dynmap_chunk_loading_statistics_count,dynmap_chunk_loading_statistics_duration])
 
             resp = self.rcon_command("dynmap stats")
-
+            
             dynmaptilerenderregex = re.compile("  (.*?): processed=(\d*), rendered=(\d*), updated=(\d*)")
             for dim, processed, rendered, updated in dynmaptilerenderregex.findall(resp):
                 dynmap_tile_render_statistics.add_sample('dynmap_tile_render_statistics',value=processed,labels={'type':'processed','file':dim})
@@ -171,6 +171,7 @@ class MinecraftCollector(object):
         player_quests_finished = Metric('player_quests_finished', 'Number of quests a Player has finished', 'counter')
         player_used_crafting_table = Metric('player_used_crafting_table',"Times a Player used a Crafting Table","counter")
         categories = ["minecraft:killed_by", "minecraft:custom", "minecraft:mined", "minecraft:killed", "minecraft:picked_up", "minecraft:crafted"]
+        print(data)
         for category in categories:
             for element in data.get("stats").get(category):
                 if category == "minecraft:killed_by":
