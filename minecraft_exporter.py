@@ -176,7 +176,7 @@ class MinecraftCollector(object):
             print(category)
             print(categories)
             for element in data.get("stats").get(category):
-                print(element)
+                print("Element: " + element)
                 if category == "minecraft:killed_by":
                     player_deaths.add_sample('player_deaths',value=data.get("stats").get(category).get(element),labels={'player':name,'cause':element})
                 elif category == "minecraft:custom":
