@@ -173,7 +173,10 @@ class MinecraftCollector(object):
         categories = ["minecraft:killed_by", "minecraft:custom", "minecraft:mined", "minecraft:killed", "minecraft:picked_up", "minecraft:crafted"]
         print(data)
         for category in categories:
+            print(category)
+            print(categories)
             for element in data.get("stats").get(category):
+                print(element)
                 if category == "minecraft:killed_by":
                     player_deaths.add_sample('player_deaths',value=data.get("stats").get(category).get(element),labels={'player':name,'cause':element})
                 elif category == "minecraft:custom":
