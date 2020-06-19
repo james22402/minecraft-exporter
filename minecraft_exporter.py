@@ -178,35 +178,7 @@ class MinecraftCollector(object):
             print(categories)
             print(data.get("stats").get(category))
             if data.get("stats").get(category) is None:
-                if category == "minecraft:killed_by":
-                    player_deaths.add_metric(value=0,labels={'player':name})
-                    continue
-                elif category == "minecraft:custom":
-                    damage_taken.add_metric(value=0,labels={'player':name})
-                    damage_dealt.add_metric(value=0,labels={'player':name})
-                    player_playtime.add_metric(value=0,labels={'player':name})
-                    player_jumps.add_metric(value=0,labels={'player':name})
-                    player_slept.add_metric(value=0,labels={'player':name})
-                    player_used_crafting_table.add_metric(value=0,labels={'player':name})
-                    cm_traveled.add_metric(value=0,labels={'player':name,'method':"crouching"})
-                    cm_traveled.add_metric(value=0,labels={'player':name,'method':"walking"})
-                    cm_traveled.add_metric(value=0,labels={'player':name,'method':"sprinting"})
-                    cm_traveled.add_metric(value=0,labels={'player':name,'method':"frost_walker"})
-                    cm_traveled.add_metric(value=0,labels={'player':name,'method':"falling"})
-                    cm_traveled.add_metric(value=0,labels={'player':name,'method':"flying"})
-                    continue
-                elif category == "minecraft:mined":
-                    blocks_mined.add_metric(value=0,labels={'player':name})
-                    continue
-                elif category == "minecraft:killed":
-                    entities_killed.add_metric(value=0,labels={'player':name})
-                    continue
-                elif category == "minecraft:picked_up":
-                    blocks_picked_up.add_metric(value=0,labels={'player':name})
-                    continue
-                elif category == "minecraft:crafted":
-                    blocks_crafted.add_metric(value=0,labels={'player':name})
-                    continue
+                continue
             for element in data.get("stats").get(category):
                 print("Element: " + element)
                 if category == "minecraft:killed_by":
