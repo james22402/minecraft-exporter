@@ -82,7 +82,7 @@ class MinecraftCollector(object):
             resp = self.rcon_command("forge entity list")
             entityregex = re.compile("(\d+): (.*?:.*?)\s")
             for entitycount, entityname in entityregex.findall(resp):
-                entities.add_metric'entities',value=entitycount,labels={'entity':entityname})
+                entities.add_metric(value=entitycount,labels={'entity':entityname})
 
         # dynmap
         if 'DYNMAP_ENABLED' in os.environ and os.environ['DYNMAP_ENABLED'] == "True":
