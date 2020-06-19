@@ -179,7 +179,7 @@ class MinecraftCollector(object):
             print(data.get("stats").get(category))
             if data.get("stats").get(category) is None:
                 if category == "minecraft:killed_by":
-                    player_deaths.add_metric(value=0,labels={'player':name,'cause':element})
+                    player_deaths.add_metric(value=0,labels={'player':name})
                     continue
                 elif category == "minecraft:custom":
                     damage_taken.add_metric(value=0,labels={'player':name})
@@ -196,16 +196,16 @@ class MinecraftCollector(object):
                     cm_traveled.add_metric(value=0,labels={'player':name,'method':"flying"})
                     continue
                 elif category == "minecraft:mined":
-                    blocks_mined.add_metric(value=0,labels={'player':name,'block':element})
+                    blocks_mined.add_metric(value=0,labels={'player':name})
                     continue
                 elif category == "minecraft:killed":
-                    entities_killed.add_metric(value=0,labels={'player':name,"entity":element})
+                    entities_killed.add_metric(value=0,labels={'player':name})
                     continue
                 elif category == "minecraft:picked_up":
-                    blocks_picked_up.add_metric(value=0,labels={'player':name,'block':element})
+                    blocks_picked_up.add_metric(value=0,labels={'player':name})
                     continue
                 elif category == "minecraft:crafted":
-                    blocks_crafted.add_metric(value=0,labels={'player':name,'block':element})
+                    blocks_crafted.add_metric(value=0,labels={'player':name})
                     continue
             for element in data.get("stats").get(category):
                 print("Element: " + element)
