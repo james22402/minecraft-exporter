@@ -1,4 +1,4 @@
-from prometheus_client import start_http_server, REGISTRY, Metric
+from prometheus_client import start_http_server, REGISTRY, CounterMetricFamily
 import time
 import requests
 import json
@@ -57,12 +57,12 @@ class MinecraftCollector(object):
         metrics = []
         if not all(x in os.environ for x in ['RCON_HOST','RCON_PASSWORD']):
             return []
-        dim_tps          = Metric('dim_tps','TPS of a dimension',"counter")
-        dim_ticktime     = Metric('dim_ticktime',"Time a Tick took in a Dimension","counter")
-        overall_tps      = Metric('overall_tps','overall TPS',"counter")
-        overall_ticktime = Metric('overall_ticktime',"overall Ticktime","counter")
-        player_online    = Metric('player_online',"is 1 if player is online","counter")
-        entities         = Metric('entities',"type and count of active entites", "counter")
+        dim_tps          = CounterMetricFamily('dim_tps','TPS of a dimension')
+        dim_ticktime     = CounterMetricFamily('dim_ticktime',"Time a Tick took in a Dimension")
+        overall_tps      = CounterMetricFamily('overall_tps','overall TPS')
+        overall_ticktime = CounterMetricFamily('overall_ticktime',"overall Ticktime")
+        player_online    = CounterMetricFamily('player_online',"is 1 if player is online")
+        entities         = CounterMetricFamily('entities',"type and count of active entites")
 
         metrics.extend([dim_tps,dim_ticktime,overall_tps,overall_ticktime,player_online,entities])
 
@@ -72,17 +72,17 @@ class MinecraftCollector(object):
             resp = self.rcon_command("forge tps")
             dimtpsregex = re.compile("Dim\s*(-*\d*)\s\((.*?)\)\s:\sMean tick time:\s(.*?) ms\. Mean TPS: (\d*\.\d*)")
             for dimid, dimname, meanticktime, meantps in dimtpsregex.findall(resp):
-                dim_tps.add_sample('dim_tps',value=meantps,labels={'dimension_id':dimid,'dimension_name':dimname})
-                dim_ticktime.add_sample('dim_ticktime',value=meanticktime,labels={'dimension_id':dimid,'dimension_name':dimname})
+                dim_tps.add_metric(value=meantps,labels={'dimension_id':dimid,'dimension_name':dimname})
+                dim_ticktime.add_metric(value=meanticktime,labels={'dimension_id':dimid,'dimension_name':dimname})
             overallregex = re.compile("Overall\s?: Mean tick time: (.*) ms. Mean TPS: (.*)")
-            overall_tps.add_sample('overall_tps',value=overallregex.findall(resp)[0][1],labels={})
-            overall_ticktime.add_sample('overall_ticktime',value=overallregex.findall(resp)[0][0],labels={})
+            overall_tps.add_metric(value=overallregex.findall(resp)[0][1],labels={})
+            overall_ticktime.add_metric(value=overallregex.findall(resp)[0][0],labels={})
 
             # entites
             resp = self.rcon_command("forge entity list")
             entityregex = re.compile("(\d+): (.*?:.*?)\s")
             for entitycount, entityname in entityregex.findall(resp):
-                entities.add_sample('entities',value=entitycount,labels={'entity':entityname})
+                entities.add_metric'entities',value=entitycount,labels={'entity':entityname})
 
         # dynmap
         if 'DYNMAP_ENABLED' in os.environ and os.environ['DYNMAP_ENABLED'] == "True":
@@ -110,7 +110,7 @@ class MinecraftCollector(object):
         if playerregex.findall(resp):
             for player in playerregex.findall(resp)[0].split(","):
                 if not player.isspace():
-                    player_online.add_sample('player_online',value=1,labels={'player':player.lstrip()})
+                    player_online.add_metric(value=1,labels={'player':player.lstrip()})
 
         return metrics
 
@@ -151,76 +151,78 @@ class MinecraftCollector(object):
     def update_metrics_for_player(self,uuid):
         data = self.get_player_stats(uuid)
         name = self.uuid_to_player(uuid)
-        blocks_mined        = Metric('blocks_mined','Blocks a Player mined',"counter")
-        blocks_picked_up    = Metric('blocks_picked_up','Blocks a Player picked up',"counter")
-        player_deaths       = Metric('player_deaths','How often a Player died',"counter")
-        player_jumps        = Metric('player_jumps','How often a Player has jumped',"counter")
-        cm_traveled         = Metric('cm_traveled','How many cm a Player traveled, whatever that means',"counter")
-        player_xp_total     = Metric('player_xp_total',"How much total XP a player has","counter")
-        player_current_level= Metric('player_current_level',"How much current XP a player has","counter")
-        player_food_level   = Metric('player_food_level',"How much food the player currently has","counter")
-        player_health       = Metric('player_health',"How much Health the player currently has","counter")
-        player_score        = Metric('player_score',"The Score of the player","counter")
-        entities_killed     = Metric('entities_killed',"Entities killed by player","counter")
-        damage_taken        = Metric('damage_taken',"Damage Taken by Player","counter")
-        damage_dealt        = Metric('damage_dealt',"Damage dealt by Player","counter")
-        blocks_crafted      = Metric('blocks_crafted',"Items a Player crafted","counter")
-        player_playtime     = Metric('player_playtime',"Time in Minutes a Player was online","counter")
-        player_advancements = Metric('player_advancements', "Number of completed advances of a player","counter")
-        player_slept        = Metric('player_slept',"Times a Player slept in a bed","counter")
-        player_quests_finished = Metric('player_quests_finished', 'Number of quests a Player has finished', 'counter')
-        player_used_crafting_table = Metric('player_used_crafting_table',"Times a Player used a Crafting Table","counter")
+        blocks_mined        = CounterMetricFamily('blocks_mined','Blocks a Player mined',value=0, labels=[name])
+        blocks_picked_up    = CounterMetricFamily('blocks_picked_up','Blocks a Player picked up',value=0, labels=[name])
+        player_deaths       = CounterMetricFamily('player_deaths','How often a Player died',value=0, labels=[name])
+        player_jumps        = CounterMetricFamily('player_jumps','How often a Player has jumped',value=0, labels=[name])
+        cm_traveled         = CounterMetricFamily('cm_traveled','How many cm a Player traveled, whatever that means',value=0, labels=[name])
+        player_xp_total     = CounterMetricFamily('player_xp_total',"How much total XP a player has",value=0, labels=[name])
+        player_current_level= CounterMetricFamily('player_current_level',"How much current XP a player has",value=0, labels=[name])
+        player_food_level   = CounterMetricFamily('player_food_level',"How much food the player currently has",value=0, labels=[name])
+        player_health       = CounterMetricFamily('player_health',"How much Health the player currently has",value=0, labels=[name])
+        player_score        = CounterMetricFamily('player_score',"The Score of the player",value=0, labels=[name])
+        entities_killed     = CounterMetricFamily('entities_killed',"Entities killed by player",value=0, labels=[name])
+        damage_taken        = CounterMetricFamily('damage_taken',"Damage Taken by Player",value=0, labels=[name])
+        damage_dealt        = CounterMetricFamily('damage_dealt',"Damage dealt by Player",value=0, labels=[name])
+        blocks_crafted      = CounterMetricFamily('blocks_crafted',"Items a Player crafted",value=0, labels=[name])
+        player_playtime     = CounterMetricFamily('player_playtime',"Time in Minutes a Player was online",value=0, labels=[name])
+        player_advancements = CounterMetricFamily('player_advancements', "Number of completed advances of a player",value=0, labels=[name])
+        player_slept        = CounterMetricFamily('player_slept',"Times a Player slept in a bed",value=0, labels=[name])
+        player_quests_finished = CounterMetricFamily('player_quests_finished', 'Number of quests a Player has finished', value=0, labels=[name])
+        player_used_crafting_table = CounterMetricFamily('player_used_crafting_table',"Times a Player used a Crafting Table",value=0, labels=[name])
         categories = ["minecraft:killed_by", "minecraft:custom", "minecraft:mined", "minecraft:killed", "minecraft:picked_up", "minecraft:crafted"]
         print(data)
         for category in categories:
             print(category)
             print(categories)
             print(data.get("stats").get(category))
+            if data.get("stats").get(category) is None:
+                continue
             for element in data.get("stats").get(category):
                 print("Element: " + element)
                 if category == "minecraft:killed_by":
-                    player_deaths.add_sample('player_deaths',value=data.get("stats").get(category).get(element),labels={'player':name,'cause':element})
+                    player_deaths.add_metric(value=data.get("stats").get(category).get(element),labels={'player':name,'cause':element})
                 elif category == "minecraft:custom":
                     if element == "minecraft:damage_taken":
-                        damage_taken.add_sample('damage_taken',value=data.get("stats").get(category).get(element),labels={'player':name})
+                        damage_taken.add_metric(value=data.get("stats").get(category).get(element),labels={'player':name})
                     elif element == "minecraft:damage_dealt":
-                        damage_dealt.add_sample('damage_dealt',value=data.get("stats").get(category).get(element),labels={'player':name})
+                        damage_dealt.add_metric(value=data.get("stats").get(category).get(element),labels={'player':name})
                     elif element == "minecraft:play_one_minute":
-                        player_playtime.add_sample('player_playtime',value=data.get("stats").get(category).get(element),labels={'player':name})
+                        player_playtime.add_metric(value=data.get("stats").get(category).get(element),labels={'player':name})
                     elif element == "minecraft:jump":
-                        player_jumps.add_sample("player_jumps",value=data.get("stats").get(category).get(element),labels={'player':name})
+                        player_jumps.add_metric(value=data.get("stats").get(category).get(element),labels={'player':name})
                     elif element == "minecraft:sleep_in_bed":
-                        player_slept.add_sample('player_slept',value=data.get("stats").get(category).get(element),labels={'player':name})
+                        player_slept.add_metric(value=data.get("stats").get(category).get(element),labels={'player':name})
                     elif element == "minecraft:interact_with_crafting_table":
-                        player_used_crafting_table.add_sample('player_used_crafting_table',value=data.get("stats").get(category).get(element),labels={'player':name})
+                        player_used_crafting_table.add_metric(value=data.get("stats").get(category).get(element),labels={'player':name})
                     elif element == "minecraft:crouch_one_cm":
-                        cm_traveled.add_sample("cm_traveled",value=data.get("stats").get(category).get(element),labels={'player':name,'method':"crouching"})
+                        cm_traveled.add_metric(value=data.get("stats").get(category).get(element),labels={'player':name,'method':"crouching"})
                     elif element == "minecraft:walk_one_cm":
-                        cm_traveled.add_sample("cm_traveled",value=data.get("stats").get(category).get(element),labels={'player':name,'method':"walking"})
+                        cm_traveled.add_metric(value=data.get("stats").get(category).get(element),labels={'player':name,'method':"walking"})
                     elif element == "minecraft:sprint_one_cm":
-                        cm_traveled.add_sample("cm_traveled",value=data.get("stats").get(category).get(element),labels={'player':name,'method':"sprinting"})
+                        cm_traveled.add_metric(value=data.get("stats").get(category).get(element),labels={'player':name,'method':"sprinting"})
                     elif element == "minecraft:walk_on_water_one_cm":
-                        cm_traveled.add_sample("cm_traveled",value=data.get("stats").get(category).get(element),labels={'player':name,'method':"frost_walker"})
+                        cm_traveled.add_metric(value=data.get("stats").get(category).get(element),labels={'player':name,'method':"frost_walker"})
                     elif element == "minecraft:fall_one_cm":
-                        cm_traveled.add_sample("cm_traveled",value=data.get("stats").get(category).get(element),labels={'player':name,'method':"falling"})
+                        cm_traveled.add_metric(value=data.get("stats").get(category).get(element),labels={'player':name,'method':"falling"})
                     elif element == "minecraft:fly_one_cm":
-                        cm_traveled.add_sample("cm_traveled",value=data.get("stats").get(category).get(element),labels={'player':name,'method':"flying"})
+                        cm_traveled.add_metric(value=data.get("stats").get(category).get(element),labels={'player':name,'method':"flying"})
                 elif category == "minecraft:mined":
-                    blocks_mined.add_sample("blocks_mined",value=data.get("stats").get(category).get(element),labels={'player':name,'block':element})
+                    blocks_mined.add_metric(value=data.get("stats").get(category).get(element),labels={'player':name,'block':element})
                 elif category == "minecraft:killed":
-                    entities_killed.add_sample('entities_killed',value=data.get("stats").get(category).get(element),labels={'player':name,"entity":element})
+                    entities_killed.add_metric(value=data.get("stats").get(category).get(element),labels={'player':name,"entity":element})
                 elif category == "minecraft:picked_up":
-                    blocks_picked_up.add_sample("blocks_picked_up",value=data.get("stats").get(category).get(element),labels={'player':name,'block':element})
+                    blocks_picked_up.add_metric(value=data.get("stats").get(category).get(element),labels={'player':name,'block':element})
                 elif category == "minecraft:crafted":
-                    blocks_crafted.add_sample("blocks_crafted",value=data.get("stats").get(category).get(element),labels={'player':name,'block':element})
-        player_xp_total.add_sample('player_xp_total',value=data.get("stat:XpTotal"),labels={'player':name})
-        player_current_level.add_sample('player_current_level',value=data.get("stat:XpLevel"),labels={'player':name})
-        player_score.add_sample('player_score',value=data.get("stat:Score"),labels={'player':name})
-        player_health.add_sample('player_health',value=data.get("stat:Health"),labels={'player':name})
-        player_food_level.add_sample('player_food_level',value=data.get("stat:foodLevel"),labels={'player':name})
-        player_advancements.add_sample('player_advancements',value=data.get("stat:advancements"),labels={'player':name})
+                    blocks_crafted.add_metric(value=data.get("stats").get(category).get(element),labels={'player':name,'block':element})
+        player_xp_total.add_metric(value=data.get("stat:XpTotal"),labels={'player':name})
+        player_current_level.add_metric(value=data.get("stat:XpLevel"),labels={'player':name})
+        player_score.add_metric(value=data.get("stat:Score"),labels={'player':name})
+        player_health.add_metric(value=data.get("stat:Health"),labels={'player':name})
+        player_food_level.add_metric(value=data.get("stat:foodLevel"),labels={'player':name})
+        player_advancements.add_metric(value=data.get("stat:advancements"),labels={'player':name})
         if self.questsEnabled:
-            player_quests_finished.add_sample('player_quests_finished',value=data.get("stat:questsFinished"),labels={'player':name})
+            player_quests_finished.add_metric('player_quests_finished',value=data.get("stat:questsFinished"),labels={'player':name})
 
         return [blocks_mined,blocks_picked_up,player_deaths,player_jumps,cm_traveled,player_xp_total,player_current_level,player_food_level,player_health,player_score,entities_killed,damage_taken,damage_dealt,blocks_crafted,player_playtime,player_advancements,player_slept,player_used_crafting_table,player_quests_finished]
 
