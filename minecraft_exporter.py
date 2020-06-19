@@ -152,25 +152,25 @@ class MinecraftCollector(object):
     def update_metrics_for_player(self,uuid):
         data = self.get_player_stats(uuid)
         name = self.uuid_to_player(uuid)
-        blocks_mined        = CounterMetricFamily('blocks_mined','Blocks a Player mined',value=0, labels=[name])
-        blocks_picked_up    = CounterMetricFamily('blocks_picked_up','Blocks a Player picked up',value=0, labels=[name])
-        player_deaths       = CounterMetricFamily('player_deaths','How often a Player died',value=0, labels=[name])
-        player_jumps        = CounterMetricFamily('player_jumps','How often a Player has jumped',value=0, labels=[name])
-        cm_traveled         = CounterMetricFamily('cm_traveled','How many cm a Player traveled, whatever that means',value=0, labels=[name])
-        player_xp_total     = CounterMetricFamily('player_xp_total',"How much total XP a player has",value=0, labels=[name])
-        player_current_level= CounterMetricFamily('player_current_level',"How much current XP a player has",value=0, labels=[name])
-        player_food_level   = CounterMetricFamily('player_food_level',"How much food the player currently has",value=0, labels=[name])
-        player_health       = CounterMetricFamily('player_health',"How much Health the player currently has",value=0, labels=[name])
-        player_score        = CounterMetricFamily('player_score',"The Score of the player",value=0, labels=[name])
-        entities_killed     = CounterMetricFamily('entities_killed',"Entities killed by player",value=0, labels=[name])
-        damage_taken        = CounterMetricFamily('damage_taken',"Damage Taken by Player",value=0, labels=[name])
-        damage_dealt        = CounterMetricFamily('damage_dealt',"Damage dealt by Player",value=0, labels=[name])
-        blocks_crafted      = CounterMetricFamily('blocks_crafted',"Items a Player crafted",value=0, labels=[name])
-        player_playtime     = CounterMetricFamily('player_playtime',"Time in Minutes a Player was online",value=0, labels=[name])
-        player_advancements = CounterMetricFamily('player_advancements', "Number of completed advances of a player",value=0, labels=[name])
-        player_slept        = CounterMetricFamily('player_slept',"Times a Player slept in a bed",value=0, labels=[name])
-        player_quests_finished = CounterMetricFamily('player_quests_finished', 'Number of quests a Player has finished', value=0, labels=[name])
-        player_used_crafting_table = CounterMetricFamily('player_used_crafting_table',"Times a Player used a Crafting Table",value=0, labels=[name])
+        blocks_mined        = CounterMetricFamily('blocks_mined','Blocks a Player mined', labels=[name])
+        blocks_picked_up    = CounterMetricFamily('blocks_picked_up','Blocks a Player picked up', labels=[name])
+        player_deaths       = CounterMetricFamily('player_deaths','How often a Player died', labels=[name])
+        player_jumps        = CounterMetricFamily('player_jumps','How often a Player has jumped', labels=[name])
+        cm_traveled         = CounterMetricFamily('cm_traveled','How many cm a Player traveled, whatever that means', labels=[name])
+        player_xp_total     = CounterMetricFamily('player_xp_total',"How much total XP a player has", labels=[name])
+        player_current_level= CounterMetricFamily('player_current_level',"How much current XP a player has", labels=[name])
+        player_food_level   = CounterMetricFamily('player_food_level',"How much food the player currently has", labels=[name])
+        player_health       = CounterMetricFamily('player_health',"How much Health the player currently has", labels=[name])
+        player_score        = CounterMetricFamily('player_score',"The Score of the player", labels=[name])
+        entities_killed     = CounterMetricFamily('entities_killed',"Entities killed by player", labels=[name])
+        damage_taken        = CounterMetricFamily('damage_taken',"Damage Taken by Player", labels=[name])
+        damage_dealt        = CounterMetricFamily('damage_dealt',"Damage dealt by Player", labels=[name])
+        blocks_crafted      = CounterMetricFamily('blocks_crafted',"Items a Player crafted", labels=[name])
+        player_playtime     = CounterMetricFamily('player_playtime',"Time in Minutes a Player was online", labels=[name])
+        player_advancements = CounterMetricFamily('player_advancements', "Number of completed advances of a player", labels=[name])
+        player_slept        = CounterMetricFamily('player_slept',"Times a Player slept in a bed", labels=[name])
+        player_quests_finished = CounterMetricFamily('player_quests_finished', 'Number of quests a Player has finished',  labels=[name])
+        player_used_crafting_table = CounterMetricFamily('player_used_crafting_table',"Times a Player used a Crafting Table", labels=[name])
         categories = ["minecraft:killed_by", "minecraft:custom", "minecraft:mined", "minecraft:killed", "minecraft:picked_up", "minecraft:crafted"]
         print(data)
         for category in categories:
@@ -178,7 +178,35 @@ class MinecraftCollector(object):
             print(categories)
             print(data.get("stats").get(category))
             if data.get("stats").get(category) is None:
-                continue
+                if category == "minecraft:killed_by":
+                    player_deaths.add_metric(value=0,labels={'player':name,'cause':element})
+                    continue
+                elif category == "minecraft:custom":
+                    damage_taken.add_metric(value=0,labels={'player':name})
+                    damage_dealt.add_metric(value=0,labels={'player':name})
+                    player_playtime.add_metric(value=0,labels={'player':name})
+                    player_jumps.add_metric(value=0,labels={'player':name})
+                    player_slept.add_metric(value=0,labels={'player':name})
+                    player_used_crafting_table.add_metric(value=0,labels={'player':name})
+                    cm_traveled.add_metric(value=0,labels={'player':name,'method':"crouching"})
+                    cm_traveled.add_metric(value=0,labels={'player':name,'method':"walking"})
+                    cm_traveled.add_metric(value=0,labels={'player':name,'method':"sprinting"})
+                    cm_traveled.add_metric(value=0,labels={'player':name,'method':"frost_walker"})
+                    cm_traveled.add_metric(value=0,labels={'player':name,'method':"falling"})
+                    cm_traveled.add_metric(value=0,labels={'player':name,'method':"flying"})
+                    continue
+                elif category == "minecraft:mined":
+                    blocks_mined.add_metric(value=0,labels={'player':name,'block':element})
+                    continue
+                elif category == "minecraft:killed":
+                    entities_killed.add_metric(value=0,labels={'player':name,"entity":element})
+                    continue
+                elif category == "minecraft:picked_up":
+                    blocks_picked_up.add_metric(value=0,labels={'player':name,'block':element})
+                    continue
+                elif category == "minecraft:crafted":
+                    blocks_crafted.add_metric(value=0,labels={'player':name,'block':element})
+                    continue
             for element in data.get("stats").get(category):
                 print("Element: " + element)
                 if category == "minecraft:killed_by":
