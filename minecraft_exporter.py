@@ -1,4 +1,5 @@
-from prometheus_client.core import start_http_server, REGISTRY, CounterMetricFamily, Metric
+from prometheus_client import Metric, start_http_server
+from prometheus_client.core import REGISTRY, CounterMetricFamily
 import time
 import requests
 import json
