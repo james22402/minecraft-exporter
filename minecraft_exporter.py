@@ -167,7 +167,7 @@ class MinecraftCollector(object):
         damage_dealt        = CounterMetricFamily('damage_dealt',"Damage dealt by Player")
         blocks_crafted      = CounterMetricFamily('blocks_crafted',"Items a Player crafted")
         player_playtime     = CounterMetricFamily('player_playtime',"Time in Minutes a Player was online")
-        player_advancements = CounterMetricFamily('player_advancements', "Number of completed advances of a player)
+        player_advancements = CounterMetricFamily('player_advancements', "Number of completed advances of a player")
         player_slept        = CounterMetricFamily('player_slept',"Times a Player slept in a bed")
         player_quests_finished = CounterMetricFamily('player_quests_finished', 'Number of quests a Player has finished')
         player_used_crafting_table = CounterMetricFamily('player_used_crafting_table',"Times a Player used a Crafting Table")
