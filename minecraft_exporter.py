@@ -243,7 +243,7 @@ if __name__ == '__main__':
         try:
             REGISTRY.register(MinecraftCollector())
         except Exception as e:
-                print("ERROR: " + e)
+                print("ERROR: " + str(e))
         print("Exporter started on Port 8000")
         while True:
             time.sleep(1)
