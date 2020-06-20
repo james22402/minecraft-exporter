@@ -22,6 +22,8 @@ class MinecraftCollector(object):
         self.rcon = None
         if os.path.isdir(self.betterquesting):
             self.questsEnabled = True
+        if os.path.isdir(self.statsdirectory):
+
         schedule.every().day.at("01:00").do(self.flush_playernamecache)
 
     def get_players(self):
@@ -222,6 +224,7 @@ class MinecraftCollector(object):
         player_health.add_metric(value=data.get("stat:Health"),labels={'player':name})
         player_food_level.add_metric(value=data.get("stat:foodLevel"),labels={'player':name})
         player_advancements.add_metric(value=data.get("stat:advancements"),labels={'player':name})
+        
         if self.questsEnabled:
             player_quests_finished.add_metric('player_quests_finished',value=data.get("stat:questsFinished"),labels={'player':name})
 
@@ -238,10 +241,12 @@ class MinecraftCollector(object):
 if __name__ == '__main__':
     if all(x in os.environ for x in ['RCON_HOST','RCON_PASSWORD']):
         print("RCON is enabled for "+ os.environ['RCON_HOST'])
-
-    start_http_server(8000)
-    REGISTRY.register(MinecraftCollector())
-    print("Exporter started on Port 8000")
-    while True:
-        time.sleep(1)
-        schedule.run_pending()
+        start_http_server(8000)
+        REGISTRY.register(MinecraftCollector())
+        print("Exporter started on Port 8000")
+        while True:
+            time.sleep(1)
+            try:
+                schedule.run_pending()
+            except Exception as e:
+                print("ERROR: " + e.message)
