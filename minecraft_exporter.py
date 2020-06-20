@@ -22,8 +22,6 @@ class MinecraftCollector(object):
         self.rcon = None
         if os.path.isdir(self.betterquesting):
             self.questsEnabled = True
-        if os.path.isdir(self.statsdirectory):
-
         schedule.every().day.at("01:00").do(self.flush_playernamecache)
 
     def get_players(self):
