@@ -177,54 +177,76 @@ class MinecraftCollector(object):
             print(category)
             print(categories)
             print(data.get("stats").get(category))
-            if data.get("stats").get(category) is None:
-                continue
-            for element in data.get("stats").get(category):
-                print("Element: " + element)
-                if category == "minecraft:killed_by":
-                    player_deaths.add_metric(value=data.get("stats").get(category).get(element),labels={'player':name,'cause':element})
-                elif category == "minecraft:custom":
-                    if element == "minecraft:damage_taken":
-                        damage_taken.add_metric(value=data.get("stats").get(category).get(element),labels={'player':name})
-                    elif element == "minecraft:damage_dealt":
-                        damage_dealt.add_metric(value=data.get("stats").get(category).get(element),labels={'player':name})
-                    elif element == "minecraft:play_one_minute":
-                        player_playtime.add_metric(value=data.get("stats").get(category).get(element),labels={'player':name})
-                    elif element == "minecraft:jump":
-                        player_jumps.add_metric(value=data.get("stats").get(category).get(element),labels={'player':name})
-                    elif element == "minecraft:sleep_in_bed":
-                        player_slept.add_metric(value=data.get("stats").get(category).get(element),labels={'player':name})
-                    elif element == "minecraft:interact_with_crafting_table":
-                        player_used_crafting_table.add_metric(value=data.get("stats").get(category).get(element),labels={'player':name})
-                    elif element == "minecraft:crouch_one_cm":
-                        cm_traveled.add_metric(value=data.get("stats").get(category).get(element),labels={'player':name,'method':"crouching"})
-                    elif element == "minecraft:walk_one_cm":
-                        cm_traveled.add_metric(value=data.get("stats").get(category).get(element),labels={'player':name,'method':"walking"})
-                    elif element == "minecraft:sprint_one_cm":
-                        cm_traveled.add_metric(value=data.get("stats").get(category).get(element),labels={'player':name,'method':"sprinting"})
-                    elif element == "minecraft:walk_on_water_one_cm":
-                        cm_traveled.add_metric(value=data.get("stats").get(category).get(element),labels={'player':name,'method':"frost_walker"})
-                    elif element == "minecraft:fall_one_cm":
-                        cm_traveled.add_metric(value=data.get("stats").get(category).get(element),labels={'player':name,'method':"falling"})
-                    elif element == "minecraft:fly_one_cm":
-                        cm_traveled.add_metric(value=data.get("stats").get(category).get(element),labels={'player':name,'method':"flying"})
-                elif category == "minecraft:mined":
-                    blocks_mined.add_metric(value=data.get("stats").get(category).get(element),labels={'player':name,'block':element})
-                elif category == "minecraft:killed":
-                    entities_killed.add_metric(value=data.get("stats").get(category).get(element),labels={'player':name,"entity":element})
-                elif category == "minecraft:picked_up":
-                    blocks_picked_up.add_metric(value=data.get("stats").get(category).get(element),labels={'player':name,'block':element})
-                elif category == "minecraft:crafted":
-                    blocks_crafted.add_metric(value=data.get("stats").get(category).get(element),labels={'player':name,'block':element})
-        player_xp_total.add_metric(value=data.get("stat:XpTotal"),labels={'player':name})
-        player_current_level.add_metric(value=data.get("stat:XpLevel"),labels={'player':name})
-        player_score.add_metric(value=data.get("stat:Score"),labels={'player':name})
-        player_health.add_metric(value=data.get("stat:Health"),labels={'player':name})
-        player_food_level.add_metric(value=data.get("stat:foodLevel"),labels={'player':name})
-        player_advancements.add_metric(value=data.get("stat:advancements"),labels={'player':name})
-        
+            if data.get("stats").get(category) is not None:
+                for element in data.get("stats").get(category):
+                    print("Element: " + element)
+                    if category == "minecraft:killed_by":
+                        player_deaths.add_metric(value=data.get("stats").get(category).get(element),labels={'player':name,'cause':element})
+                    elif category == "minecraft:custom":
+                        if element == "minecraft:damage_taken":
+                            damage_taken.add_metric(value=data.get("stats").get(category).get(element),labels={'player':name})
+                        elif element == "minecraft:damage_dealt":
+                            damage_dealt.add_metric(value=data.get("stats").get(category).get(element),labels={'player':name})
+                        elif element == "minecraft:play_one_minute":
+                            player_playtime.add_metric(value=data.get("stats").get(category).get(element),labels={'player':name})
+                        elif element == "minecraft:jump":
+                            player_jumps.add_metric(value=data.get("stats").get(category).get(element),labels={'player':name})
+                        elif element == "minecraft:sleep_in_bed":
+                            player_slept.add_metric(value=data.get("stats").get(category).get(element),labels={'player':name})
+                        elif element == "minecraft:interact_with_crafting_table":
+                            player_used_crafting_table.add_metric(value=data.get("stats").get(category).get(element),labels={'player':name})
+                        elif element == "minecraft:crouch_one_cm":
+                            cm_traveled.add_metric(value=data.get("stats").get(category).get(element),labels={'player':name,'method':"crouching"})
+                        elif element == "minecraft:walk_one_cm":
+                            cm_traveled.add_metric(value=data.get("stats").get(category).get(element),labels={'player':name,'method':"walking"})
+                        elif element == "minecraft:sprint_one_cm":
+                            cm_traveled.add_metric(value=data.get("stats").get(category).get(element),labels={'player':name,'method':"sprinting"})
+                        elif element == "minecraft:walk_on_water_one_cm":
+                            cm_traveled.add_metric(value=data.get("stats").get(category).get(element),labels={'player':name,'method':"frost_walker"})
+                        elif element == "minecraft:fall_one_cm":
+                            cm_traveled.add_metric(value=data.get("stats").get(category).get(element),labels={'player':name,'method':"falling"})
+                        elif element == "minecraft:fly_one_cm":
+                            cm_traveled.add_metric(value=data.get("stats").get(category).get(element),labels={'player':name,'method':"flying"})
+                    elif category == "minecraft:mined":
+                        blocks_mined.add_metric(value=data.get("stats").get(category).get(element),labels={'player':name,'block':element})
+                    elif category == "minecraft:killed":
+                        entities_killed.add_metric(value=data.get("stats").get(category).get(element),labels={'player':name,"entity":element})
+                    elif category == "minecraft:picked_up":
+                        blocks_picked_up.add_metric(value=data.get("stats").get(category).get(element),labels={'player':name,'block':element})
+                    elif category == "minecraft:crafted":
+                        blocks_crafted.add_metric(value=data.get("stats").get(category).get(element),labels={'player':name,'block':element})
+                player_xp_total.add_metric(value=data.get("stat:XpTotal"),labels={'player':name})
+                player_current_level.add_metric(value=data.get("stat:XpLevel"),labels={'player':name})
+                player_score.add_metric(value=data.get("stat:Score"),labels={'player':name})
+                player_health.add_metric(value=data.get("stat:Health"),labels={'player':name})
+                player_food_level.add_metric(value=data.get("stat:foodLevel"),labels={'player':name})
+                player_advancements.add_metric(value=data.get("stat:advancements"),labels={'player':name})
+            else:
+                player_deaths.add_metric(value=0,labels={'player':name,'cause':None})
+                damage_taken.add_metric(value=0,labels={'player':name})
+                damage_dealt.add_metric(value=0,labels={'player':name})
+                player_playtime.add_metric(value=0,labels={'player':name})
+                player_jumps.add_metric(value=0,labels={'player':name})
+                player_slept.add_metric(value=0,labels={'player':name})
+                player_used_crafting_table.add_metric(value=0,labels={'player':name})
+                cm_traveled.add_metric(value=0,labels={'player':name,'method':"crouching"})
+                cm_traveled.add_metric(value=0,labels={'player':name,'method':"walking"})
+                cm_traveled.add_metric(value=0,labels={'player':name,'method':"sprinting"})
+                cm_traveled.add_metric(value=0,labels={'player':name,'method':"frost_walker"})
+                cm_traveled.add_metric(value=0,labels={'player':name,'method':"falling"})
+                cm_traveled.add_metric(value=0,labels={'player':name,'method':"flying"})
+                blocks_mined.add_metric(value=0,labels={'player':name,'block':None})
+                entities_killed.add_metric(value=0,labels={'player':name,"entity":None})
+                blocks_picked_up.add_metric(value=0,labels={'player':name,'block':None})
+                blocks_crafted.add_metric(value=0,labels={'player':name,'block':None})
+                player_xp_total.add_metric(value=0,labels={'player':name})
+                player_current_level.add_metric(value=0,labels={'player':name})
+                player_score.add_metric(value=0,labels={'player':name})
+                player_health.add_metric(value=0,labels={'player':name})
+                player_food_level.add_metric(value=0,labels={'player':name})
+                player_advancements.add_metric(value=0,labels={'player':name})
         if self.questsEnabled:
-            player_quests_finished.add_metric('player_quests_finished',value=data.get("stat:questsFinished"),labels={'player':name})
+            player_quests_finished.add_metric(value=0,labels={'player':name})
 
         return [blocks_mined,blocks_picked_up,player_deaths,player_jumps,cm_traveled,player_xp_total,player_current_level,player_food_level,player_health,player_score,entities_killed,damage_taken,damage_dealt,blocks_crafted,player_playtime,player_advancements,player_slept,player_used_crafting_table,player_quests_finished]
 
