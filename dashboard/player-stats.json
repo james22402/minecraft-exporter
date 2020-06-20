@@ -95,7 +95,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum(blocks_mined{player=\"$player\"}) by (block)",
+          "expr": "sum(blocks_mined_total{player=\"$player\"}) by (block)",
           "legendFormat": "{{block}}",
           "refId": "A"
         }
@@ -181,7 +181,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum(blocks_crafted{player=\"$player\"}) by (block)",
+          "expr": "sum(blocks_crafted_total{player=\"$player\"}) by (block)",
           "legendFormat": "{{block}}",
           "refId": "A"
         }
@@ -267,7 +267,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum(blocks_picked_up{player=\"$player\"}) by (block)",
+          "expr": "sum(blocks_picked_up_total{player=\"$player\"}) by (block)",
           "legendFormat": "{{block}}",
           "refId": "A"
         }
@@ -377,7 +377,7 @@
       "tableColumn": "",
       "targets": [
         {
-          "expr": "sum(player_deaths{player=\"$player\"})",
+          "expr": "sum(player_deaths_total{player=\"$player\"})",
           "instant": true,
           "legendFormat": "",
           "refId": "A"
@@ -462,7 +462,7 @@
       "tableColumn": "",
       "targets": [
         {
-          "expr": "player_jumps{player=\"$player\"}",
+          "expr": "player_jumps_total{player=\"$player\"}",
           "instant": true,
           "legendFormat": "",
           "refId": "A"
@@ -523,7 +523,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "cm_traveled{player=\"$player\"} / 1000",
+          "expr": "cm_traveled_total{player=\"$player\"} / 1000",
           "legendFormat": "{{  method }}",
           "refId": "A"
         }
@@ -609,7 +609,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "entities_killed{player=\"$player\"}",
+          "expr": "entities_killed_total{player=\"$player\"}",
           "legendFormat": "{{ entity }}",
           "refId": "A"
         }
